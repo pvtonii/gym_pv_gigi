@@ -15,6 +15,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'GYM',
   },
+  icons: {
+    icon: '/icons/icon-192.png',
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -23,7 +27,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0d0f14',
+  themeColor: '#f9fafb',
 }
 
 export default function RootLayout({

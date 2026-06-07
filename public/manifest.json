@@ -4,8 +4,8 @@
   "description": "Acompanhamento de treinos",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d0f14",
-  "theme_color": "#0d0f14",
+  "background_color": "#111827",
+  "theme_color": "#f9fafb",
   "orientation": "portrait",
   "icons": [
     {
