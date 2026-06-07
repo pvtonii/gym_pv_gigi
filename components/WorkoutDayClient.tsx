@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { LogOut, Eye, EyeOff } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ExerciseCard, type ExerciseValues } from '@/components/ExerciseCard'
@@ -31,14 +31,10 @@ export function WorkoutDayClient({
   const session = useSession()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [viewingOther, setViewingOther] = useState(false)
   const [values, setValues] = useState<Record<string, ExerciseValues>>(
     () =>
       Object.fromEntries(
-        workoutDay.exercises.map((e) => [
-          e.key,
-          { weight: '', sets: '', reps: '' },
-        ])
+        workoutDay.exercises.map((e) => [e.key, { weight: '', sets: '', reps: '' }])
       )
   )
   const [completedToday, setCompletedToday] = useState(false)
@@ -52,7 +48,7 @@ export function WorkoutDayClient({
       (e) => values[e.key]?.weight || values[e.key]?.sets || values[e.key]?.reps
     )
     if (toSave.length === 0) {
-      toast.error('Preencha pelo menos um exercício antes de salvar.')
+      toast.error('Fill in at least one exercise before saving.')
       return
     }
 
@@ -71,14 +67,12 @@ export function WorkoutDayClient({
       }
 
       if (saved > 0) {
-        toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
-        const allFilled = workoutDay.exercises.every(
-          (e) => values[e.key]?.weight
-        )
+        toast.success(`${saved} exercise${saved > 1 ? 's' : ''} saved! 💪`)
+        const allFilled = workoutDay.exercises.every((e) => values[e.key]?.weight)
         if (allFilled) setCompletedToday(true)
         router.refresh()
       } else {
-        toast.error('Erro ao salvar. Tente novamente.')
+        toast.error('Error saving. Please try again.')
       }
     })
   }
@@ -88,31 +82,27 @@ export function WorkoutDayClient({
     router.push('/login')
   }
 
-  const currentLastLogs = viewingOther ? otherLastLogs : myLastLogs
-  const currentPRs = viewingOther ? otherPRs : myPRs
-
   return (
     <>
       {/* Topbar */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between px-4 h-14"
+        className="sticky top-0 z-50 flex items-center justify-between px-4"
         style={{
-          background: 'var(--card)',
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--border)',
+          height: 'calc(56px + env(safe-area-inset-top))',
           paddingTop: 'env(safe-area-inset-top)',
         }}
       >
         <div>
           <div className="flex items-center gap-2">
-            <span
-              className="text-lg font-black"
-              style={{ color: 'var(--accent)' }}
-            >
+            <span className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>
               GYM
             </span>
             <span
-              className="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: 'rgba(0,229,255,0.12)', color: 'var(--accent)' }}
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: 'var(--card-alt)', color: 'var(--text-muted)' }}
             >
               {workoutDay.split}
             </span>
@@ -122,21 +112,15 @@ export function WorkoutDayClient({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewingOther((v) => !v)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-all"
-            style={{
-              background: viewingOther ? 'rgba(255,64,129,0.15)' : 'var(--card-alt)',
-              color: viewingOther ? 'var(--accent-gi)' : 'var(--text-muted)',
-              border: `1px solid ${viewingOther ? 'rgba(255,64,129,0.3)' : 'var(--border)'}`,
-            }}
+          <div
+            className="text-xs px-3 py-1 rounded-full font-medium"
+            style={{ background: 'var(--card-alt)', color: 'var(--text-muted)' }}
           >
-            {viewingOther ? <EyeOff size={12} /> : <Eye size={12} />}
-            {viewingOther ? otherName : session.name}
-          </button>
+            {session.name}
+          </div>
           <button
             onClick={handleLogout}
-            className="p-2 rounded-full transition-all"
+            className="p-2 rounded-full transition-colors"
             style={{ color: 'var(--text-muted)' }}
           >
             <LogOut size={16} />
@@ -147,66 +131,57 @@ export function WorkoutDayClient({
       {/* Conteúdo */}
       <div
         className="px-4 py-4 space-y-4"
-        style={{
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom) + 20px)',
-        }}
+        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom) + 20px)' }}
       >
-        {/* Header do dia */}
-        <div className="text-center py-2">
-          <h1 className="text-2xl font-black" style={{ color: 'var(--text)' }}>
-            {workoutDay.label}-feira
+        {/* Day header */}
+        <div className="pt-1 pb-2">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+            {workoutDay.label}
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {workoutDay.split} — {workoutDay.muscles}
+            {workoutDay.split} · {workoutDay.muscles}
           </p>
-          {viewingOther && (
-            <div
-              className="mt-2 inline-block text-xs px-3 py-1 rounded-full font-medium"
-              style={{ background: 'rgba(255,64,129,0.12)', color: 'var(--accent-gi)' }}
-            >
-              Visualizando treino de {otherName}
-            </div>
-          )}
         </div>
 
-        {/* Banner de conclusão */}
+        {/* Completion banner */}
         {completedToday && (
           <div
-            className="rounded-2xl p-4 text-center font-bold"
-            style={{ background: 'rgba(0,230,118,0.12)', color: 'var(--success)' }}
+            className="rounded-2xl px-4 py-3 text-sm font-medium"
+            style={{ background: '#f0fdf4', color: 'var(--success)', border: '1px solid #bbf7d0' }}
           >
-            Treino concluído! 💪 Excelente trabalho, {session.name}!
+            Workout complete! 💪 Great work, {session.name}!
           </div>
         )}
 
-        {/* Cards de exercício */}
+        {/* Exercise cards */}
         {workoutDay.exercises.map((exercise) => (
           <ExerciseCard
             key={exercise.key}
             exercise={exercise}
-            lastLog={currentLastLogs[exercise.key] ?? null}
-            pr={currentPRs[exercise.key] ?? null}
-            readonly={viewingOther}
-            ownerName={otherName}
+            myLastLog={myLastLogs[exercise.key] ?? null}
+            otherLastLog={otherLastLogs[exercise.key] ?? null}
+            myPr={myPRs[exercise.key] ?? null}
+            otherPr={otherPRs[exercise.key] ?? null}
+            myName={session.name}
+            otherName={otherName}
             values={values[exercise.key]}
             onChange={handleChange}
           />
         ))}
 
-        {/* Botão salvar */}
-        {!viewingOther && (
-          <button
-            onClick={handleSave}
-            disabled={isPending}
-            className="w-full h-14 rounded-2xl font-bold text-base transition-all active:scale-98 disabled:opacity-60"
-            style={{
-              background: isPending ? 'var(--card-alt)' : 'var(--accent)',
-              color: '#0d0f14',
-            }}
-          >
-            {isPending ? 'Salvando…' : '💾 Salvar treino'}
-          </button>
-        )}
+        {/* Save button */}
+        <button
+          onClick={handleSave}
+          disabled={isPending}
+          className="w-full h-13 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+          style={{
+            background: 'var(--text)',
+            color: '#ffffff',
+            height: 52,
+          }}
+        >
+          {isPending ? 'Saving…' : 'Save Workout'}
+        </button>
       </div>
 
       {/* Rest Timer FAB */}

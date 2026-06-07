@@ -21,27 +21,29 @@ export default async function ProgressoPage() {
     <>
       {/* Topbar */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between px-4 h-14"
+        className="sticky top-0 z-50 flex items-center justify-between px-4"
         style={{
-          background: 'var(--card)',
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--border)',
+          height: 'calc(56px + env(safe-area-inset-top))',
           paddingTop: 'env(safe-area-inset-top)',
         }}
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black" style={{ color: 'var(--accent)' }}>
+            <span className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>
               GYM
             </span>
             <span
-              className="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: 'rgba(0,229,255,0.12)', color: 'var(--accent)' }}
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: 'var(--card-alt)', color: 'var(--text-muted)' }}
             >
-              Progresso
+              Progress
             </span>
           </div>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Histórico & Comparativo
+            History &amp; Comparison
           </p>
         </div>
         <form

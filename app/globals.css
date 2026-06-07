@@ -50,25 +50,25 @@
 }
 
 :root {
-  /* shadcn tokens mapped to gym dark theme */
-  --background: #0d0f14;
-  --foreground: #ffffff;
-  --card: #1a1d24;
-  --card-foreground: #ffffff;
-  --popover: #1a1d24;
-  --popover-foreground: #ffffff;
-  --primary: #00e5ff;
-  --primary-foreground: #0d0f14;
-  --secondary: #222631;
-  --secondary-foreground: #ffffff;
-  --muted: #222631;
-  --muted-foreground: #8892a4;
-  --accent: #222631;
-  --accent-foreground: #ffffff;
-  --destructive: #ff1744;
-  --border: #2a2d36;
-  --input: #222631;
-  --ring: #00e5ff;
+  /* shadcn tokens — light minimal theme */
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
+  --accent-foreground: #111827;
+  --destructive: #dc2626;
+  --border: #e5e7eb;
+  --input: #f3f4f6;
+  --ring: #18181b;
   --radius: 0.75rem;
 }
 

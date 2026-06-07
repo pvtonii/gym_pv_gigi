@@ -5,17 +5,16 @@ import { usePathname } from 'next/navigation'
 import { Dumbbell, Layers, TrendingUp } from 'lucide-react'
 
 const TABS = [
-  { href: '/treino/terca', label: 'Terça', icon: Dumbbell, short: 'TER' },
-  { href: '/treino/quarta', label: 'Quarta', icon: Layers, short: 'QUA' },
-  { href: '/treino/quinta', label: 'Quinta', icon: Dumbbell, short: 'QUI' },
-  { href: '/treino/progresso', label: 'Progresso', icon: TrendingUp, short: 'PRG' },
+  { href: '/treino/terca', label: 'Tuesday', icon: Dumbbell },
+  { href: '/treino/quarta', label: 'Wednesday', icon: Layers },
+  { href: '/treino/quinta', label: 'Thursday', icon: Dumbbell },
+  { href: '/treino/progresso', label: 'Progress', icon: TrendingUp },
 ]
 
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    /* Filho direto do body via treino/layout — segue Melhores Práticas v3 */
     <nav
       style={{
         position: 'fixed',
@@ -24,8 +23,10 @@ export function BottomNav() {
         bottom: 0,
         zIndex: 80,
         paddingBottom: 'env(safe-area-inset-bottom)',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(12px)',
+        borderTop: '1px solid var(--border)',
       }}
-      className="bg-[var(--card)] border-t border-[var(--border)]"
     >
       <div className="flex items-center justify-around max-w-[430px] mx-auto">
         {TABS.map(({ href, label, icon: Icon }) => {

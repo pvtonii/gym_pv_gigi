@@ -3,14 +3,13 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { loginAction } from '@/lib/actions/login-action'
 import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
 import type { UserId } from '@/types'
 
 const USERS = [
-  { id: 'pv' as UserId, name: 'PV', color: '#00e5ff', emoji: '⚡' },
-  { id: 'gi' as UserId, name: 'GI', color: '#ff4081', emoji: '🌸' },
+  { id: 'pv' as UserId, name: 'PV', color: '#2563eb', emoji: '⚡' },
+  { id: 'gi' as UserId, name: 'GI', color: '#e11d48', emoji: '🌸' },
 ]
 
 export default function LoginPage() {
@@ -40,9 +39,7 @@ export default function LoginPage() {
     newPin[index] = value.slice(-1)
     setPin(newPin)
     if (value && index < 3) inputRefs[index + 1].current?.focus()
-    if (newPin.every((d) => d !== '')) {
-      handleSubmit(newPin.join(''))
-    }
+    if (newPin.every((d) => d !== '')) handleSubmit(newPin.join(''))
   }
 
   function handleKeyDown(index: number, e: React.KeyboardEvent) {
@@ -63,7 +60,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push('/treino/terca')
     } else {
-      setError(result.error ?? 'Erro ao fazer login.')
+      setError(result.error ?? 'Login failed.')
       setPin(['', '', '', ''])
       setLoading(false)
       setTimeout(() => inputRefs[0].current?.focus(), 50)
@@ -77,19 +74,16 @@ export default function LoginPage() {
     >
       {/* Logo */}
       <div className="mb-10 text-center">
-        <div
-          className="text-5xl font-black tracking-tight mb-1"
-          style={{ color: 'var(--accent)' }}
-        >
+        <div className="text-5xl font-black tracking-tight mb-1" style={{ color: 'var(--text)' }}>
           GYM
         </div>
-        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
           Tracker
         </div>
       </div>
 
       {/* User cards */}
-      <div className="flex gap-5 w-full max-w-xs">
+      <div className="flex gap-4 w-full max-w-xs">
         {USERS.map((user) => (
           <button
             key={user.id}
@@ -97,30 +91,25 @@ export default function LoginPage() {
             className="flex-1 rounded-2xl p-6 flex flex-col items-center gap-3 transition-all active:scale-95"
             style={{
               background: 'var(--card)',
-              border: `2px solid var(--border)`,
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow)',
             }}
           >
             <div
-              className="text-4xl w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl"
-              style={{ background: `${user.color}22`, color: user.color }}
+              className="text-3xl w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ background: `${user.color}14` }}
             >
               {user.emoji}
             </div>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: user.color }}
-            >
+            <span className="text-xl font-bold" style={{ color: user.color }}>
               {user.name}
             </span>
           </button>
         ))}
       </div>
 
-      {/* Motivational phrase */}
-      <p
-        className="mt-10 text-center text-sm max-w-xs"
-        style={{ color: 'var(--text-muted)' }}
-      >
+      {/* Phrase */}
+      <p className="mt-10 text-center text-sm max-w-xs" style={{ color: 'var(--text-muted)' }}>
         &ldquo;{phrase}&rdquo;
       </p>
 
@@ -132,17 +121,17 @@ export default function LoginPage() {
         >
           <DialogHeader>
             <DialogTitle
-              className="text-center text-2xl font-bold"
+              className="text-center text-xl font-bold"
               style={{ color: selectedUser?.color }}
             >
               {selectedUser?.emoji} {selectedUser?.name}
             </DialogTitle>
             <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-              Digite seu PIN de 4 dígitos
+              Enter your 4-digit PIN
             </p>
           </DialogHeader>
 
-          <div className="flex justify-center gap-3 mt-6">
+          <div className="flex justify-center gap-3 mt-4">
             {pin.map((digit, i) => (
               <input
                 key={i}
@@ -154,34 +143,30 @@ export default function LoginPage() {
                 onChange={(e) => handlePinChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 disabled={loading}
-                className="w-12 h-14 text-center text-2xl font-bold rounded-xl outline-none transition-all"
+                className="w-12 h-12 text-center text-xl font-bold rounded-xl outline-none transition-all"
                 style={{
                   background: 'var(--card-alt)',
-                  border: `2px solid ${digit ? (selectedUser?.color ?? 'var(--accent)') : 'var(--border)'}`,
+                  border: `2px solid ${digit ? (selectedUser?.color ?? 'var(--border)') : 'var(--border)'}`,
                   color: 'var(--text)',
-                  caretColor: selectedUser?.color,
                 }}
               />
             ))}
           </div>
 
           {error && (
-            <p className="text-center text-sm mt-3" style={{ color: 'var(--danger)' }}>
+            <p className="text-center text-sm mt-2" style={{ color: 'var(--danger)' }}>
               {error}
             </p>
           )}
 
-          <Button
+          <button
             onClick={() => handleSubmit()}
             disabled={loading || pin.some((d) => !d)}
-            className="w-full mt-6 h-12 rounded-xl font-bold text-base"
-            style={{
-              background: selectedUser?.color,
-              color: '#0d0f14',
-            }}
+            className="w-full mt-5 h-12 rounded-xl font-semibold text-sm transition-all active:scale-98 disabled:opacity-40"
+            style={{ background: selectedUser?.color ?? 'var(--text)', color: '#ffffff' }}
           >
-            {loading ? 'Entrando…' : 'Entrar'}
-          </Button>
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
         </DialogContent>
       </Dialog>
     </div>

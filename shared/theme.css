@@ -1,36 +1,33 @@
-/* GYM Tracker — Dark Theme v1.0 */
+/* GYM Tracker — Light Minimal Theme v2.0 */
 
 :root {
-  --bg: #0d0f14;
-  --bg-secondary: #111318;
-  --card: #1a1d24;
-  --card-alt: #222631;
-  --card-hover: #252a35;
+  --bg: #f9fafb;
+  --bg-secondary: #ffffff;
+  --card: #ffffff;
+  --card-alt: #f3f4f6;
+  --card-hover: #f0f1f3;
 
-  --accent: #00e5ff;
-  --accent-pv: #00e5ff;   /* PV = cyan elétrico */
-  --accent-gi: #ff4081;   /* GI = rose */
-  --accent-dim: rgba(0, 229, 255, 0.12);
+  --accent: #18181b;
+  --accent-pv: #2563eb;   /* PV = blue */
+  --accent-gi: #e11d48;   /* GI = rose */
 
-  --success: #00e676;
-  --warning: #ffb300;
-  --danger: #ff1744;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
 
-  --text: #ffffff;
-  --text-secondary: #c8d0df;
-  --text-muted: #8892a4;
-  --text-disabled: #4a5260;
+  --text: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-disabled: #d1d5db;
 
-  --border: #2a2d36;
-  --border-focus: #00e5ff;
+  --border: #e5e7eb;
+  --border-focus: #18181b;
 
-  /* Safe-area (iOS PWA) */
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-
-  /* Topbar */
   --topbar-height: 56px;
-
-  /* Bottom nav */
   --nav-height: 64px;
 }
