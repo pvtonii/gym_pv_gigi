@@ -1,0 +1,36 @@
+/* GYM Tracker — Dark Theme v1.0 */
+
+:root {
+  --bg: #0d0f14;
+  --bg-secondary: #111318;
+  --card: #1a1d24;
+  --card-alt: #222631;
+  --card-hover: #252a35;
+
+  --accent: #00e5ff;
+  --accent-pv: #00e5ff;   /* PV = cyan elétrico */
+  --accent-gi: #ff4081;   /* GI = rose */
+  --accent-dim: rgba(0, 229, 255, 0.12);
+
+  --success: #00e676;
+  --warning: #ffb300;
+  --danger: #ff1744;
+
+  --text: #ffffff;
+  --text-secondary: #c8d0df;
+  --text-muted: #8892a4;
+  --text-disabled: #4a5260;
+
+  --border: #2a2d36;
+  --border-focus: #00e5ff;
+
+  /* Safe-area (iOS PWA) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Topbar */
+  --topbar-height: 56px;
+
+  /* Bottom nav */
+  --nav-height: 64px;
+}

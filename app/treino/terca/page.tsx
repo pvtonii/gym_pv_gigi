@@ -1,0 +1,31 @@
+import { getSession } from '@/lib/auth'
+import { DAYS_MAP } from '@/lib/workout-data'
+import { getLastLogPerExercise, getPRPerExercise } from '@/lib/actions/get-logs'
+import { WorkoutDayClient } from '@/components/WorkoutDayClient'
+import type { UserId } from '@/types'
+
+export default async function TercaPage() {
+  const session = await getSession()
+  if (!session) return null
+
+  const otherId: UserId = session.id === 'pv' ? 'gi' : 'pv'
+  const otherName = otherId.toUpperCase()
+
+  const [myLastLogs, otherLastLogs, myPRs, otherPRs] = await Promise.all([
+    getLastLogPerExercise('terca', session.id),
+    getLastLogPerExercise('terca', otherId),
+    getPRPerExercise(session.id),
+    getPRPerExercise(otherId),
+  ])
+
+  return (
+    <WorkoutDayClient
+      workoutDay={DAYS_MAP['terca']}
+      myLastLogs={myLastLogs}
+      otherLastLogs={otherLastLogs}
+      myPRs={myPRs}
+      otherPRs={otherPRs}
+      otherName={otherName}
+    />
+  )
+}
