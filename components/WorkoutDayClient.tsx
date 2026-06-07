@@ -4,14 +4,16 @@ import { useState, useTransition } from 'react'
 import { LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { ExerciseCard, type ExerciseValues } from '@/components/ExerciseCard'
 import { RestTimer } from '@/components/RestTimer'
 import { saveLog } from '@/lib/actions/save-log'
+import { getLastLogPerExercise } from '@/lib/actions/get-logs'
 import { logout } from '@/lib/auth'
 import { useSession } from '@/components/SessionProvider'
 import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
 import { VERSION, VERSION_DATE } from '@/lib/version'
-import type { WorkoutDay, WorkoutLog } from '@/types'
+import type { WorkoutDay, WorkoutLog, UserId } from '@/types'
 
 function getDailyPhrase() {
   const today = new Date()
@@ -21,27 +23,31 @@ function getDailyPhrase() {
 
 interface WorkoutDayClientProps {
   workoutDay: WorkoutDay
-  myLastLogs: Record<string, WorkoutLog>
-  otherLastLogs: Record<string, WorkoutLog>
-  otherName: string
 }
 
-export function WorkoutDayClient({
-  workoutDay,
-  myLastLogs,
-  otherLastLogs,
-  otherName,
-}: WorkoutDayClientProps) {
+export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const session = useSession()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [values, setValues] = useState<Record<string, ExerciseValues>>(
-    () =>
-      Object.fromEntries(
-        workoutDay.exercises.map((e) => [e.key, { weight: '' }])
-      )
+    () => Object.fromEntries(workoutDay.exercises.map((e) => [e.key, { weight: '' }]))
   )
   const [completedToday, setCompletedToday] = useState(false)
+
+  const otherId: UserId = session.id === 'pv' ? 'gi' : 'pv'
+  const otherName = otherId.toUpperCase()
+
+  const { data: myLastLogs = {} } = useQuery({
+    queryKey: ['logs', session.id],
+    queryFn: () => getLastLogPerExercise('terca', session.id),
+    staleTime: 60_000,
+  })
+
+  const { data: otherLastLogs = {} } = useQuery({
+    queryKey: ['logs', otherId],
+    queryFn: () => getLastLogPerExercise('terca', otherId),
+    staleTime: 60_000,
+  })
 
   function handleChange(key: string, newValues: ExerciseValues) {
     setValues((prev) => ({ ...prev, [key]: newValues }))
@@ -50,7 +56,7 @@ export function WorkoutDayClient({
   async function handleSave() {
     const toSave = workoutDay.exercises.filter((e) => values[e.key]?.weight)
     if (toSave.length === 0) {
-      toast.error('Fill in at least one exercise before saving.')
+      toast.error('Preencha pelo menos um exercício antes de salvar.')
       return
     }
 
@@ -69,12 +75,12 @@ export function WorkoutDayClient({
       }
 
       if (saved > 0) {
-        toast.success(`${saved} exercise${saved > 1 ? 's' : ''} saved! 💪`)
+        toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
         const allFilled = workoutDay.exercises.every((e) => values[e.key]?.weight)
         if (allFilled) setCompletedToday(true)
         router.refresh()
       } else {
-        toast.error('Error saving. Please try again.')
+        toast.error('Erro ao salvar. Tente novamente.')
       }
     })
   }
@@ -130,7 +136,6 @@ export function WorkoutDayClient({
         </div>
       </header>
 
-      {/* Conteúdo */}
       <div
         className="px-4 py-4 space-y-4"
         style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom) + 20px)' }}
@@ -159,7 +164,7 @@ export function WorkoutDayClient({
             className="rounded-2xl px-4 py-3 text-sm font-medium"
             style={{ background: '#f0fdf4', color: 'var(--success)', border: '1px solid #bbf7d0' }}
           >
-            Workout complete! 💪 Great work, {session.name}!
+            Treino completo! 💪 Boa, {session.name}!
           </div>
         )}
 
@@ -168,8 +173,8 @@ export function WorkoutDayClient({
           <ExerciseCard
             key={exercise.key}
             exercise={exercise}
-            myLastLog={myLastLogs[exercise.key] ?? null}
-            otherLastLog={otherLastLogs[exercise.key] ?? null}
+            myLastLog={(myLastLogs as Record<string, WorkoutLog>)[exercise.key] ?? null}
+            otherLastLog={(otherLastLogs as Record<string, WorkoutLog>)[exercise.key] ?? null}
             myName={session.name}
             otherName={otherName}
             values={values[exercise.key]}
@@ -181,14 +186,10 @@ export function WorkoutDayClient({
         <button
           onClick={handleSave}
           disabled={isPending}
-          className="w-full h-13 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{
-            background: 'var(--text)',
-            color: '#ffffff',
-            height: 52,
-          }}
+          className="w-full rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+          style={{ background: 'var(--text)', color: '#ffffff', height: 52 }}
         >
-          {isPending ? 'Saving…' : 'Save Workout'}
+          {isPending ? 'Salvando…' : 'Salvar Treino'}
         </button>
 
         {/* Footer versão */}
@@ -197,7 +198,6 @@ export function WorkoutDayClient({
         </p>
       </div>
 
-      {/* Rest Timer FAB */}
       <RestTimer />
     </>
   )
