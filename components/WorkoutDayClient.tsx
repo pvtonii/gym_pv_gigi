@@ -9,7 +9,15 @@ import { RestTimer } from '@/components/RestTimer'
 import { saveLog } from '@/lib/actions/save-log'
 import { logout } from '@/lib/auth'
 import { useSession } from '@/components/SessionProvider'
+import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
+import { VERSION } from '@/lib/version'
 import type { WorkoutDay, WorkoutLog } from '@/types'
+
+function getDailyPhrase() {
+  const today = new Date()
+  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
+  return MOTIVATIONAL_PHRASES[seed % MOTIVATIONAL_PHRASES.length]
+}
 
 interface WorkoutDayClientProps {
   workoutDay: WorkoutDay
@@ -137,6 +145,14 @@ export function WorkoutDayClient({
           </p>
         </div>
 
+        {/* Frase do dia */}
+        <div
+          className="rounded-xl px-4 py-3 text-sm italic"
+          style={{ background: 'var(--card-alt)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+        >
+          &ldquo;{getDailyPhrase()}&rdquo;
+        </div>
+
         {/* Completion banner */}
         {completedToday && (
           <div
@@ -174,6 +190,11 @@ export function WorkoutDayClient({
         >
           {isPending ? 'Saving…' : 'Save Workout'}
         </button>
+
+        {/* Footer versão */}
+        <p className="text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          GYM Tracker v{VERSION}
+        </p>
       </div>
 
       {/* Rest Timer FAB */}
