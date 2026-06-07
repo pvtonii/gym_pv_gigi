@@ -15,8 +15,6 @@ interface WorkoutDayClientProps {
   workoutDay: WorkoutDay
   myLastLogs: Record<string, WorkoutLog>
   otherLastLogs: Record<string, WorkoutLog>
-  myPRs: Record<string, number>
-  otherPRs: Record<string, number>
   otherName: string
 }
 
@@ -24,8 +22,6 @@ export function WorkoutDayClient({
   workoutDay,
   myLastLogs,
   otherLastLogs,
-  myPRs,
-  otherPRs,
   otherName,
 }: WorkoutDayClientProps) {
   const session = useSession()
@@ -34,7 +30,7 @@ export function WorkoutDayClient({
   const [values, setValues] = useState<Record<string, ExerciseValues>>(
     () =>
       Object.fromEntries(
-        workoutDay.exercises.map((e) => [e.key, { weight: '', sets: '', reps: '' }])
+        workoutDay.exercises.map((e) => [e.key, { weight: '' }])
       )
   )
   const [completedToday, setCompletedToday] = useState(false)
@@ -44,9 +40,7 @@ export function WorkoutDayClient({
   }
 
   async function handleSave() {
-    const toSave = workoutDay.exercises.filter(
-      (e) => values[e.key]?.weight || values[e.key]?.sets || values[e.key]?.reps
-    )
+    const toSave = workoutDay.exercises.filter((e) => values[e.key]?.weight)
     if (toSave.length === 0) {
       toast.error('Fill in at least one exercise before saving.')
       return
@@ -60,8 +54,8 @@ export function WorkoutDayClient({
           day: workoutDay.day,
           exercise_key: exercise.key,
           weight: v.weight ? parseFloat(v.weight) : null,
-          reps: v.reps ? parseInt(v.reps) : null,
-          sets: v.sets ? parseInt(v.sets) : null,
+          reps: null,
+          sets: null,
         })
         if (result.success) saved++
       }
@@ -160,8 +154,6 @@ export function WorkoutDayClient({
             exercise={exercise}
             myLastLog={myLastLogs[exercise.key] ?? null}
             otherLastLog={otherLastLogs[exercise.key] ?? null}
-            myPr={myPRs[exercise.key] ?? null}
-            otherPr={otherPRs[exercise.key] ?? null}
             myName={session.name}
             otherName={otherName}
             values={values[exercise.key]}
