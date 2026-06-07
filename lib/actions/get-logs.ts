@@ -23,13 +23,22 @@ export async function getLogsForDay(
 }
 
 export async function getLastLogPerExercise(
-  day: Day,
+  _day: Day,
   userId: UserId
 ): Promise<Record<string, WorkoutLog>> {
-  const logs = await getLogsForDay(day, userId)
-  const result: Record<string, WorkoutLog> = {}
+  const supabase = await createClient()
 
-  for (const log of logs) {
+  const { data, error } = await supabase
+    .from('workout_logs')
+    .select('*')
+    .eq('user_id', userId)
+    .not('weight', 'is', null)
+    .order('logged_at', { ascending: false })
+
+  if (error || !data) return {}
+
+  const result: Record<string, WorkoutLog> = {}
+  for (const log of data as WorkoutLog[]) {
     if (!result[log.exercise_key]) {
       result[log.exercise_key] = log
     }
