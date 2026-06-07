@@ -10,7 +10,7 @@ import { saveLog } from '@/lib/actions/save-log'
 import { logout } from '@/lib/auth'
 import { useSession } from '@/components/SessionProvider'
 import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
-import { VERSION } from '@/lib/version'
+import { VERSION, VERSION_DATE } from '@/lib/version'
 import type { WorkoutDay, WorkoutLog } from '@/types'
 
 function getDailyPhrase() {
@@ -193,7 +193,7 @@ export function WorkoutDayClient({
 
         {/* Footer versão */}
         <p className="text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>
-          GYM Tracker v{VERSION}
+          GYM Tracker v{VERSION} · {VERSION_DATE}
         </p>
       </div>
 
