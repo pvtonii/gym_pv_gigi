@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExerciseCard, type ExerciseValues } from '@/components/ExerciseCard'
 import { RestTimer } from '@/components/RestTimer'
 import { saveLog } from '@/lib/actions/save-log'
@@ -28,6 +28,7 @@ interface WorkoutDayClientProps {
 export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const session = useSession()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [values, setValues] = useState<Record<string, ExerciseValues>>(
     () => Object.fromEntries(workoutDay.exercises.map((e) => [e.key, { weight: '' }]))
@@ -40,13 +41,13 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const { data: myLastLogs = {} } = useQuery({
     queryKey: ['logs', session.id],
     queryFn: () => getLastLogPerExercise('terca', session.id),
-    staleTime: 60_000,
+    staleTime: Infinity,
   })
 
   const { data: otherLastLogs = {} } = useQuery({
     queryKey: ['logs', otherId],
     queryFn: () => getLastLogPerExercise('terca', otherId),
-    staleTime: 60_000,
+    staleTime: Infinity,
   })
 
   function handleChange(key: string, newValues: ExerciseValues) {
@@ -78,7 +79,8 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
         toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
         const allFilled = workoutDay.exercises.every((e) => values[e.key]?.weight)
         if (allFilled) setCompletedToday(true)
-        router.refresh()
+        // Invalida cache do usuário atual para refletir o novo "Previous"
+        await queryClient.invalidateQueries({ queryKey: ['logs', session.id] })
       } else {
         toast.error('Erro ao salvar. Tente novamente.')
       }
