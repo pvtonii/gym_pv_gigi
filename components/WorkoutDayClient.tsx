@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { LogOut } from 'lucide-react'
+import { LogOut, RefreshCw, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -44,14 +44,19 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
     staleTime: Infinity,
   })
 
-  const { data: otherLastLogs = {} } = useQuery({
+  const { data: otherLastLogs = {}, isFetching: otherFetching } = useQuery({
     queryKey: ['logs', otherId],
     queryFn: () => getLastLogPerExercise('terca', otherId),
     staleTime: Infinity,
+    refetchOnWindowFocus: true,
   })
 
   function handleChange(key: string, newValues: ExerciseValues) {
     setValues((prev) => ({ ...prev, [key]: newValues }))
+  }
+
+  function handleRefreshOther() {
+    queryClient.invalidateQueries({ queryKey: ['logs', otherId] })
   }
 
   async function handleSave() {
@@ -79,7 +84,6 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
         toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
         const allFilled = workoutDay.exercises.every((e) => values[e.key]?.weight)
         if (allFilled) setCompletedToday(true)
-        // Invalida cache do usuário atual para refletir o novo "Previous"
         await queryClient.invalidateQueries({ queryKey: ['logs', session.id] })
       } else {
         toast.error('Erro ao salvar. Tente novamente.')
@@ -107,9 +111,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>
-              GYM
-            </span>
+            <span className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>GYM</span>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-medium"
               style={{ background: 'var(--card-alt)', color: 'var(--text-muted)' }}
@@ -117,11 +119,19 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
               {workoutDay.split}
             </span>
           </div>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            {workoutDay.muscles}
-          </p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{workoutDay.muscles}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Refresh other user */}
+          <button
+            onClick={handleRefreshOther}
+            disabled={otherFetching}
+            className="p-2 rounded-full transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            title={`Atualizar dados de ${otherName}`}
+          >
+            <RefreshCw size={16} className={otherFetching ? 'animate-spin' : ''} />
+          </button>
           <div
             className="text-xs px-3 py-1 rounded-full font-medium"
             style={{ background: 'var(--card-alt)', color: 'var(--text-muted)' }}
@@ -144,9 +154,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
       >
         {/* Day header */}
         <div className="pt-1 pb-2">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
-            {workoutDay.label}
-          </h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{workoutDay.label}</h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {workoutDay.split} · {workoutDay.muscles}
           </p>
@@ -184,21 +192,30 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
           />
         ))}
 
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          disabled={isPending}
-          className="w-full rounded-2xl font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ background: 'var(--text)', color: '#ffffff', height: 52 }}
-        >
-          {isPending ? 'Salvando…' : 'Salvar Treino'}
-        </button>
-
         {/* Footer versão */}
         <p className="text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>
           GYM Tracker v{VERSION} · {VERSION_DATE}
         </p>
       </div>
+
+      {/* Save FAB — bottom left */}
+      <button
+        onClick={handleSave}
+        disabled={isPending}
+        className="flex items-center gap-2 px-4 h-12 rounded-full font-semibold text-sm transition-all active:scale-95 disabled:opacity-50"
+        style={{
+          position: 'fixed',
+          left: 18,
+          bottom: 'calc(72px + env(safe-area-inset-bottom) + 14px)',
+          zIndex: 90,
+          background: 'var(--text)',
+          color: '#ffffff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+        }}
+      >
+        <Save size={16} className={isPending ? 'animate-pulse' : ''} />
+        {isPending ? 'Salvando…' : 'Salvar'}
+      </button>
 
       <RestTimer />
     </>

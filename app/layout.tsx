@@ -40,7 +40,13 @@ export default function RootLayout({
       <body>
         <QueryProvider>
           {children}
-          <Toaster richColors position="top-center" />
+          <Toaster
+            richColors
+            position="bottom-center"
+            toastOptions={{
+              style: { marginBottom: 'calc(72px + env(safe-area-inset-bottom))' },
+            }}
+          />
         </QueryProvider>
       </body>
     </html>

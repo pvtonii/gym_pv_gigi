@@ -148,7 +148,7 @@ export function ProgressClient({ workoutDays, pvLogs, giLogs }: ProgressClientPr
                     <Trophy size={11} /> {uid.toUpperCase()} PR
                   </div>
                   <div className="text-2xl font-bold" style={{ color: pr ? USER_COLORS[uid] : 'var(--text-muted)' }}>
-                    {pr ? `${pr}kg` : '—'}
+                    {pr ? `${pr}lbs` : '—'}
                   </div>
                 </div>
               )
@@ -185,7 +185,7 @@ export function ProgressClient({ workoutDays, pvLogs, giLogs }: ProgressClientPr
                       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(log.logged_at)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold" style={{ color: 'var(--text)' }}>{log.weight ?? '—'}kg</span>
+                      <span className="font-semibold" style={{ color: 'var(--text)' }}>{log.weight ?? '—'}lbs</span>
                       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{log.sets ?? '—'}×{log.reps ?? '—'}</span>
                     </div>
                   </div>

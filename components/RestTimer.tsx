@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Timer, X, Play, Pause } from 'lucide-react'
 
 const DURATIONS = [60, 90, 120]
@@ -10,27 +10,56 @@ export function RestTimer() {
   const [selectedDuration, setSelectedDuration] = useState(90)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [running, setRunning] = useState(false)
+
+  const endTimeRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const complete = useCallback(() => {
+    clearInterval(intervalRef.current!)
+    endTimeRef.current = null
+    setRunning(false)
+    setTimeLeft(0)
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200])
+  }, [])
+
+  const tick = useCallback(() => {
+    if (endTimeRef.current === null) return
+    const remaining = Math.ceil((endTimeRef.current - Date.now()) / 1000)
+    if (remaining <= 0) {
+      complete()
+    } else {
+      setTimeLeft(remaining)
+    }
+  }, [complete])
+
   useEffect(() => {
-    if (running && timeLeft !== null && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t === null || t <= 1) {
-            clearInterval(intervalRef.current!)
-            setRunning(false)
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200])
-            return 0
-          }
-          return t - 1
-        })
-      }, 1000)
+    if (running) {
+      intervalRef.current = setInterval(tick, 500)
+    } else {
+      clearInterval(intervalRef.current!)
     }
     return () => clearInterval(intervalRef.current!)
-  }, [running])
+  }, [running, tick])
+
+  // Recalculate on app focus — handles backgrounded timers
+  useEffect(() => {
+    function onVisibility() {
+      if (!document.hidden && running && endTimeRef.current !== null) {
+        const remaining = Math.ceil((endTimeRef.current - Date.now()) / 1000)
+        if (remaining <= 0) {
+          complete()
+        } else {
+          setTimeLeft(remaining)
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [running, complete])
 
   function startTimer(duration: number) {
     clearInterval(intervalRef.current!)
+    endTimeRef.current = Date.now() + duration * 1000
     setSelectedDuration(duration)
     setTimeLeft(duration)
     setRunning(true)
@@ -40,13 +69,20 @@ export function RestTimer() {
     if (running) {
       clearInterval(intervalRef.current!)
       setRunning(false)
+      // Snapshot remaining so resume picks up from here
+      if (endTimeRef.current !== null) {
+        const remaining = Math.max(Math.ceil((endTimeRef.current - Date.now()) / 1000), 0)
+        endTimeRef.current = Date.now() + remaining * 1000
+      }
     } else if (timeLeft !== null && timeLeft > 0) {
+      endTimeRef.current = Date.now() + timeLeft * 1000
       setRunning(true)
     }
   }
 
   function reset() {
     clearInterval(intervalRef.current!)
+    endTimeRef.current = null
     setRunning(false)
     setTimeLeft(null)
   }
@@ -60,7 +96,7 @@ export function RestTimer() {
       {/* FAB */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center justify-center w-12 h-12 rounded-full shadow-md transition-all active:scale-95"
+        className="flex items-center justify-center w-12 h-12 rounded-full transition-all active:scale-95"
         style={{
           position: 'fixed',
           right: 18,
@@ -69,7 +105,7 @@ export function RestTimer() {
           background: running ? 'var(--text)' : 'var(--card)',
           border: '1px solid var(--border)',
           color: running ? '#ffffff' : 'var(--text-muted)',
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
         }}
       >
         {running && timeLeft !== null ? (
@@ -82,7 +118,7 @@ export function RestTimer() {
       {/* Timer panel */}
       {open && (
         <div
-          className="rounded-2xl p-5 shadow-lg"
+          className="rounded-2xl p-5"
           style={{
             position: 'fixed',
             right: 18,
@@ -91,13 +127,11 @@ export function RestTimer() {
             background: 'var(--card)',
             border: '1px solid var(--border)',
             width: 210,
-            boxShadow: 'var(--shadow-md)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
           }}
         >
           <div className="flex items-center justify-between mb-4">
-            <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
-              Rest Timer
-            </span>
+            <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Rest Timer</span>
             <button onClick={() => setOpen(false)} style={{ color: 'var(--text-muted)' }}>
               <X size={16} />
             </button>
@@ -121,22 +155,13 @@ export function RestTimer() {
 
           {timeLeft !== null && (
             <div className="text-center">
-              <div
-                className="h-1 rounded-full mb-3"
-                style={{ background: 'var(--card-alt)' }}
-              >
+              <div className="h-1 rounded-full mb-3" style={{ background: 'var(--card-alt)' }}>
                 <div
                   className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${progress}%`,
-                    background: isDone ? 'var(--success)' : 'var(--text)',
-                  }}
+                  style={{ width: `${progress}%`, background: isDone ? 'var(--success)' : 'var(--text)' }}
                 />
               </div>
-              <div
-                className="text-3xl font-bold"
-                style={{ color: isDone ? 'var(--success)' : 'var(--text)' }}
-              >
+              <div className="text-3xl font-bold" style={{ color: isDone ? 'var(--success)' : 'var(--text)' }}>
                 {isDone ? '✅ Go!' : formatTime(timeLeft)}
               </div>
               <div className="flex justify-center gap-2 mt-3">
