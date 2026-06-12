@@ -15,6 +15,23 @@ import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
 import { VERSION, VERSION_DATE } from '@/lib/version'
 import type { WorkoutDay, WorkoutLog, UserId } from '@/types'
 
+interface CustomEntry { name: string; key: string }
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'exercise'
+}
+
+function loadCustom(userId: string): Record<string, CustomEntry> {
+  try {
+    const raw = localStorage.getItem(`gym_custom_${userId}`)
+    return raw ? JSON.parse(raw) : {}
+  } catch { return {} }
+}
+
+function saveCustom(userId: string, data: Record<string, CustomEntry>) {
+  localStorage.setItem(`gym_custom_${userId}`, JSON.stringify(data))
+}
+
 function getDailyPhrase() {
   const today = new Date()
   const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
@@ -30,9 +47,12 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
-  const [values, setValues] = useState<Record<string, ExerciseValues>>(
-    () => Object.fromEntries(workoutDay.exercises.map((e) => [e.key, { weight: '' }]))
-  )
+  const [values, setValues] = useState<Record<string, ExerciseValues>>(() => {
+    const custom = typeof window !== 'undefined' ? loadCustom(session.id) : {}
+    return Object.fromEntries(
+      workoutDay.exercises.map((e) => [e.key, { weight: '', customName: custom[e.key]?.name ?? '' }])
+    )
+  })
   const [completedToday, setCompletedToday] = useState(false)
 
   const otherId: UserId = session.id === 'pv' ? 'gi' : 'pv'
@@ -59,6 +79,11 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
     queryClient.invalidateQueries({ queryKey: ['logs', otherId] })
   }
 
+  function getEffectiveKey(exerciseKey: string): string {
+    const custom = loadCustom(session.id)
+    return custom[exerciseKey]?.key ?? exerciseKey
+  }
+
   async function handleSave() {
     const toSave = workoutDay.exercises.filter((e) => values[e.key]?.weight)
     if (toSave.length === 0) {
@@ -67,18 +92,33 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
     }
 
     startTransition(async () => {
+      const custom = loadCustom(session.id)
       let saved = 0
+
       for (const exercise of toSave) {
         const v = values[exercise.key]
+        const trimmedName = v.customName?.trim()
+
+        // Derive the key to log under
+        let effectiveKey: string
+        if (trimmedName && trimmedName !== exercise.name) {
+          effectiveKey = slugify(trimmedName)
+          custom[exercise.key] = { name: trimmedName, key: effectiveKey }
+        } else {
+          effectiveKey = custom[exercise.key]?.key ?? exercise.key
+        }
+
         const result = await saveLog({
           day: workoutDay.day,
-          exercise_key: exercise.key,
+          exercise_key: effectiveKey,
           weight: v.weight ? parseFloat(v.weight) : null,
           reps: null,
           sets: null,
         })
         if (result.success) saved++
       }
+
+      saveCustom(session.id, custom)
 
       if (saved > 0) {
         toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
@@ -183,8 +223,8 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
           <ExerciseCard
             key={exercise.key}
             exercise={exercise}
-            myLastLog={(myLastLogs as Record<string, WorkoutLog>)[exercise.key] ?? null}
-            otherLastLog={(otherLastLogs as Record<string, WorkoutLog>)[exercise.key] ?? null}
+            myLastLog={(myLastLogs as Record<string, WorkoutLog>)[getEffectiveKey(exercise.key)] ?? null}
+            otherLastLog={(otherLastLogs as Record<string, WorkoutLog>)[getEffectiveKey(exercise.key)] ?? null}
             myName={session.name}
             otherName={otherName}
             values={values[exercise.key]}
