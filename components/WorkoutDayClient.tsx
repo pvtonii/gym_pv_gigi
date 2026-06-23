@@ -124,6 +124,14 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
         toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
         const allFilled = workoutDay.exercises.every((e) => values[e.key]?.weight)
         if (allFilled) setCompletedToday(true)
+        // Limpa os pesos salvos — Previous vai atualizar via refetch
+        setValues((prev) => {
+          const next = { ...prev }
+          for (const exercise of toSave) {
+            next[exercise.key] = { ...next[exercise.key], weight: '' }
+          }
+          return next
+        })
         await queryClient.invalidateQueries({ queryKey: ['logs', session.id] })
       } else {
         toast.error('Erro ao salvar. Tente novamente.')
