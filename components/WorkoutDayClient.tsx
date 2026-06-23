@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExerciseCard, type ExerciseValues } from '@/components/ExerciseCard'
 import { RestTimer } from '@/components/RestTimer'
 import { saveLog } from '@/lib/actions/save-log'
-import { getLastLogPerExercise } from '@/lib/actions/get-logs'
+import { getLastTwoLogsPerExercise, type ExercisePair } from '@/lib/actions/get-logs'
 import { logout } from '@/lib/auth'
 import { useSession } from '@/components/SessionProvider'
 import { MOTIVATIONAL_PHRASES } from '@/lib/workout-data'
@@ -58,15 +58,15 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const otherId: UserId = session.id === 'pv' ? 'gi' : 'pv'
   const otherName = otherId.toUpperCase()
 
-  const { data: myLastLogs = {} } = useQuery({
+  const { data: myLogs = {} } = useQuery({
     queryKey: ['logs', session.id],
-    queryFn: () => getLastLogPerExercise('terca', session.id),
+    queryFn: () => getLastTwoLogsPerExercise(session.id),
     staleTime: Infinity,
   })
 
-  const { data: otherLastLogs = {}, isFetching: otherFetching } = useQuery({
+  const { data: otherLogs = {}, isFetching: otherFetching } = useQuery({
     queryKey: ['logs', otherId],
-    queryFn: () => getLastLogPerExercise('terca', otherId),
+    queryFn: () => getLastTwoLogsPerExercise(otherId),
     staleTime: Infinity,
     refetchOnWindowFocus: true,
   })
@@ -231,8 +231,9 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
           <ExerciseCard
             key={exercise.key}
             exercise={exercise}
-            myLastLog={(myLastLogs as Record<string, WorkoutLog>)[getEffectiveKey(exercise.key)] ?? null}
-            otherLastLog={(otherLastLogs as Record<string, WorkoutLog>)[getEffectiveKey(exercise.key)] ?? null}
+            myCurrentLog={(myLogs as Record<string, ExercisePair>)[getEffectiveKey(exercise.key)]?.cur ?? null}
+            myPreviousLog={(myLogs as Record<string, ExercisePair>)[getEffectiveKey(exercise.key)]?.prev ?? null}
+            otherLastLog={(otherLogs as Record<string, ExercisePair>)[getEffectiveKey(exercise.key)]?.cur ?? null}
             myName={session.name}
             otherName={otherName}
             values={values[exercise.key]}

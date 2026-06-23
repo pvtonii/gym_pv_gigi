@@ -13,7 +13,8 @@ export interface ExerciseValues {
 
 interface ExerciseCardProps {
   exercise: Exercise
-  myLastLog: WorkoutLog | null
+  myCurrentLog: WorkoutLog | null
+  myPreviousLog: WorkoutLog | null
   otherLastLog: WorkoutLog | null
   myName: string
   otherName: string
@@ -23,7 +24,8 @@ interface ExerciseCardProps {
 
 export function ExerciseCard({
   exercise,
-  myLastLog,
+  myCurrentLog,
+  myPreviousLog,
   otherLastLog,
   myName,
   otherName,
@@ -66,7 +68,8 @@ export function ExerciseCard({
     setEditingName(false)
   }
 
-  const prevWeight = myLastLog?.weight ?? null
+  const prevWeight = myPreviousLog?.weight ?? null
+  const curWeight = myCurrentLog?.weight ?? null
   const otherWeight = otherLastLog?.weight ?? null
 
   return (
@@ -171,30 +174,41 @@ export function ExerciseCard({
           <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--accent-pv)' }}>
             {myName}
           </span>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="text-[10px] font-medium block mb-1" style={{ color: 'var(--text-muted)' }}>
                 Previous
               </label>
               <div
-                className="h-11 rounded-xl px-3 flex items-center justify-center text-sm font-semibold"
+                className="h-11 rounded-xl px-2 flex items-center justify-center text-sm font-semibold"
                 style={{ background: 'var(--card-alt)', color: 'var(--text-muted)', border: '1.5px solid var(--border)' }}
               >
-                {prevWeight !== null ? `${prevWeight} lbs` : '—'}
+                {prevWeight !== null ? `${prevWeight}` : '—'}
               </div>
             </div>
             <div>
               <label className="text-[10px] font-medium block mb-1" style={{ color: 'var(--text-muted)' }}>
-                Current (lbs)
+                Current
+              </label>
+              <div
+                className="h-11 rounded-xl px-2 flex items-center justify-center text-sm font-semibold"
+                style={{ background: 'var(--card-alt)', color: 'var(--text)', border: '1.5px solid var(--border)' }}
+              >
+                {curWeight !== null ? `${curWeight}` : '—'}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-medium block mb-1" style={{ color: 'var(--text-muted)' }}>
+                New (lbs)
               </label>
               <input
                 type="number"
                 inputMode="decimal"
-                placeholder={prevWeight?.toString() ?? '0'}
+                placeholder={curWeight?.toString() ?? '0'}
                 value={values.weight}
                 onChange={(e) => onChange(exercise.key, { ...values, weight: e.target.value })}
-                className="w-full h-11 rounded-xl px-3 text-center text-sm font-semibold outline-none transition-all"
-                style={{ background: 'var(--card-alt)', border: '1.5px solid var(--border)', color: 'var(--text)' }}
+                className="w-full h-11 rounded-xl px-2 text-center text-sm font-semibold outline-none transition-all"
+                style={{ background: 'var(--card-alt)', border: '1.5px solid var(--accent-pv)', color: 'var(--text)' }}
               />
             </div>
           </div>

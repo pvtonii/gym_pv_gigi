@@ -47,6 +47,36 @@ export async function getLastLogPerExercise(
   return result
 }
 
+export interface ExercisePair {
+  cur: WorkoutLog | null
+  prev: WorkoutLog | null
+}
+
+export async function getLastTwoLogsPerExercise(
+  userId: UserId
+): Promise<Record<string, ExercisePair>> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('workout_logs')
+    .select('*')
+    .eq('user_id', userId)
+    .not('weight', 'is', null)
+    .order('logged_at', { ascending: false })
+
+  if (error || !data) return {}
+
+  const result: Record<string, ExercisePair> = {}
+  for (const log of data as WorkoutLog[]) {
+    if (!result[log.exercise_key]) {
+      result[log.exercise_key] = { cur: log, prev: null }
+    } else if (result[log.exercise_key].prev === null) {
+      result[log.exercise_key].prev = log
+    }
+  }
+  return result
+}
+
 export async function getPRPerExercise(
   userId: UserId
 ): Promise<Record<string, number>> {
