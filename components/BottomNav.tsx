@@ -7,7 +7,7 @@ import { Dumbbell, Layers, TrendingUp } from 'lucide-react'
 const TABS = [
   { href: '/treino/terca', label: 'Tuesday', icon: Dumbbell },
   { href: '/treino/quarta', label: 'Wednesday', icon: Layers },
-  { href: '/treino/quinta', label: 'Thursday', icon: Dumbbell },
+  { href: '/treino/quinta', label: 'Friday', icon: Dumbbell },
   { href: '/treino/progresso', label: 'Progress', icon: TrendingUp },
 ]
 

@@ -115,7 +115,7 @@ export const WORKOUT_DAYS: WorkoutDay[] = [
   },
   {
     day: 'quinta',
-    label: 'Thursday',
+    label: 'Friday',
     split: 'Pull',
     muscles: 'Back · Lats · Biceps',
     exercises: [

@@ -21,15 +21,17 @@ function slugify(s: string): string {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'exercise'
 }
 
-function loadCustom(userId: string): Record<string, CustomEntry> {
+const CUSTOM_KEY = 'gym_custom'
+
+function loadCustom(): Record<string, CustomEntry> {
   try {
-    const raw = localStorage.getItem(`gym_custom_${userId}`)
+    const raw = localStorage.getItem(CUSTOM_KEY)
     return raw ? JSON.parse(raw) : {}
   } catch { return {} }
 }
 
-function saveCustom(userId: string, data: Record<string, CustomEntry>) {
-  localStorage.setItem(`gym_custom_${userId}`, JSON.stringify(data))
+function saveCustom(data: Record<string, CustomEntry>) {
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(data))
 }
 
 function getDailyPhrase() {
@@ -48,7 +50,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [values, setValues] = useState<Record<string, ExerciseValues>>(() => {
-    const custom = typeof window !== 'undefined' ? loadCustom(session.id) : {}
+    const custom = typeof window !== 'undefined' ? loadCustom() : {}
     return Object.fromEntries(
       workoutDay.exercises.map((e) => [e.key, { weight: '', customName: custom[e.key]?.name ?? '' }])
     )
@@ -73,6 +75,18 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
 
   function handleChange(key: string, newValues: ExerciseValues) {
     setValues((prev) => ({ ...prev, [key]: newValues }))
+    // Persist name change immediately so badge survives page reload
+    if (newValues.customName !== undefined && newValues.customName !== values[key]?.customName) {
+      const exercise = workoutDay.exercises.find((e) => e.key === key)
+      const custom = loadCustom()
+      const trimmed = newValues.customName.trim()
+      if (exercise && trimmed && trimmed !== exercise.name) {
+        custom[key] = { name: trimmed, key: slugify(trimmed) }
+      } else {
+        delete custom[key]
+      }
+      saveCustom(custom)
+    }
   }
 
   function handleRefreshOther() {
@@ -80,7 +94,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
   }
 
   function getEffectiveKey(exerciseKey: string): string {
-    const custom = loadCustom(session.id)
+    const custom = loadCustom()
     return custom[exerciseKey]?.key ?? exerciseKey
   }
 
@@ -92,7 +106,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
     }
 
     startTransition(async () => {
-      const custom = loadCustom(session.id)
+      const custom = loadCustom()
       let saved = 0
 
       for (const exercise of toSave) {
@@ -118,7 +132,7 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
         if (result.success) saved++
       }
 
-      saveCustom(session.id, custom)
+      saveCustom(custom)
 
       if (saved > 0) {
         toast.success(`${saved} exercício${saved > 1 ? 's' : ''} salvo${saved > 1 ? 's' : ''}! 💪`)
