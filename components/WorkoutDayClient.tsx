@@ -188,11 +188,14 @@ export function WorkoutDayClient({ workoutDay }: WorkoutDayClientProps) {
           <button
             onClick={handleRefreshOther}
             disabled={otherFetching}
-            className="p-2 rounded-full transition-colors"
+            className="flex items-center gap-1 p-2 rounded-full transition-colors"
             style={{ color: 'var(--text-muted)' }}
             title={`Atualizar dados de ${otherName}`}
           >
             <RefreshCw size={16} className={otherFetching ? 'animate-spin' : ''} />
+            <span className="text-[9px] font-medium tracking-tight" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+              v{VERSION}
+            </span>
           </button>
           <div
             className="text-xs px-3 py-1 rounded-full font-medium"
