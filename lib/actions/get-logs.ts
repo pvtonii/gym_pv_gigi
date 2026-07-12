@@ -62,16 +62,23 @@ export async function getLastTwoLogsPerExercise(
     .select('*')
     .eq('user_id', userId)
     .not('weight', 'is', null)
-    .order('logged_at', { ascending: false })
+    .order('logged_at', { ascending: true })
 
   if (error || !data) return {}
 
+  // prev = primeiro registro (mais antigo), cur = último registro (mais recente)
   const result: Record<string, ExercisePair> = {}
   for (const log of data as WorkoutLog[]) {
     if (!result[log.exercise_key]) {
-      result[log.exercise_key] = { cur: log, prev: null }
-    } else if (result[log.exercise_key].prev === null) {
-      result[log.exercise_key].prev = log
+      result[log.exercise_key] = { cur: log, prev: log }
+    } else {
+      result[log.exercise_key].cur = log
+    }
+  }
+  // Se só existe um registro, prev e cur são iguais — prev fica null
+  for (const key of Object.keys(result)) {
+    if (result[key].prev?.id === result[key].cur?.id) {
+      result[key].prev = null
     }
   }
   return result
