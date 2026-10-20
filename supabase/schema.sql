@@ -38,34 +38,12 @@ CREATE INDEX IF NOT EXISTS idx_body_weight_lookup
 -- ============================================================
 -- RLS (Row Level Security)
 -- ============================================================
+-- O app só acessa o banco pelo servidor com a service role key (bypassa RLS).
+-- RLS ligado sem policies = anon key sem acesso nenhum.
 
+ALTER TABLE users        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workout_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE body_weight  ENABLE ROW LEVEL SECURITY;
-
--- Todos podem ler (PV vê treino da GI e vice-versa)
-CREATE POLICY "read_all_logs"
-  ON workout_logs FOR SELECT USING (true);
-
-CREATE POLICY "read_all_bodyweight"
-  ON body_weight FOR SELECT USING (true);
-
--- Apenas anon key sem restrição extra (app pessoal de 2 usuários)
--- A segurança de edição é feita no front: campos disabled para o outro usuário.
--- Para produção: usar Supabase Auth + JWT claim com user_id.
-CREATE POLICY "insert_logs"
-  ON workout_logs FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "update_logs"
-  ON workout_logs FOR UPDATE USING (true);
-
-CREATE POLICY "delete_logs"
-  ON workout_logs FOR DELETE USING (true);
-
-CREATE POLICY "insert_bodyweight"
-  ON body_weight FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "delete_bodyweight"
-  ON body_weight FOR DELETE USING (true);
 
 -- ============================================================
 -- SEED — 2 usuários fixos

@@ -26,8 +26,7 @@
 | Server Action: salvar log de treino | `lib/actions/save-log.ts` |
 | Server Action: buscar logs | `lib/actions/get-logs.ts` |
 | Server Action: login (wrapper) | `lib/actions/login-action.ts` |
-| Supabase client (browser) | `lib/supabase/client.ts` |
-| Supabase client (server) | `lib/supabase/server.ts` |
+| Supabase client (server, service role) | `lib/supabase/server.ts` |
 | Dados dos exercícios + frases motivacionais | `lib/workout-data.ts` |
 | Tipos TypeScript | `types/index.ts` |
 | Proteção de rotas | `middleware.ts` |

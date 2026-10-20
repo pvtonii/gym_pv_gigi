@@ -2,9 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
+import { SESSION_COOKIE, signSession, verifySession } from '@/lib/session'
 import type { UserId, SessionUser } from '@/types'
 
-const SESSION_COOKIE = 'gym_session'
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 dias
 
 async function sha256(text: string): Promise<string> {
@@ -39,7 +39,7 @@ export async function login(
   }
 
   const cookieStore = await cookies()
-  cookieStore.set(SESSION_COOKIE, JSON.stringify(session), {
+  cookieStore.set(SESSION_COOKIE, await signSession(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -57,14 +57,5 @@ export async function logout(): Promise<void> {
 
 export async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies()
-  const raw = cookieStore.get(SESSION_COOKIE)?.value
-  if (!raw) return null
-
-  try {
-    const session = JSON.parse(raw) as SessionUser
-    if (Date.now() > session.expiresAt) return null
-    return session
-  } catch {
-    return null
-  }
+  return verifySession(cookieStore.get(SESSION_COOKIE)?.value)
 }
